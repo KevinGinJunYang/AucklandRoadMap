@@ -107,4 +107,6 @@ public class Node {
 	public void addOutSegments(Segment s) {
 		this.outSegments.add(s);
 	}
+	
+	//DO DRAW
 }
