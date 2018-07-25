@@ -1,3 +1,6 @@
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
 import java.util.ArrayList;
 
 public class Node {
@@ -6,7 +9,8 @@ public class Node {
 	private double lat;
 	private double lon;
 	private Location loc;
-	
+	private boolean highlight;
+
 	private ArrayList<Segment> inSegments;
 	private ArrayList<Segment> outSegments;
 	/**
@@ -98,15 +102,38 @@ public class Node {
 	public void setOutSegments(ArrayList<Segment> outSegments) {
 		this.outSegments = outSegments;
 	}
-	
-	
+
+
 	public void addInSegments(Segment s) {
 		this.inSegments.add(s);
 	}
-	
+
 	public void addOutSegments(Segment s) {
 		this.outSegments.add(s);
 	}
-	
-	//DO DRAW
+
+	/**
+	 * @return the highlight
+	 */
+	public boolean isHighlight() {
+		return highlight;
+	}
+	/**
+	 * @param highlight the highlight to set
+	 */
+	public void setHighlight(boolean highlight) {
+		this.highlight = highlight;
+	}
+
+	public void draw(Graphics g, Location origin, double scale) {
+		Point nodePoint = loc.asPoint(origin, scale);
+
+		if(highlight == true) {
+			g.setColor(Color.RED);
+		}else {
+			g.setColor(Color.BLACK);
+
+		}
+		g.fillOval(nodePoint.x-2, nodePoint.y-2, 4, 4);
+	}
 }
