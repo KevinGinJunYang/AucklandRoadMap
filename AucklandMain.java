@@ -5,7 +5,6 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +16,7 @@ public class AucklandMain extends GUI{
 	private Map<Integer, Road> roadPoints = new HashMap<>();
 	private Map<Integer, Segment> segmentPoints = new HashMap<>();
 	private List<Segment> segementList = new ArrayList<Segment>();
-	
+
 	private double centerLat = -36.847622;
 	private double centerLon = 174.763444;
 	private double scale = 111.0;
@@ -32,24 +31,19 @@ public class AucklandMain extends GUI{
 
 
 	@Override
-	protected void redraw(Graphics g) { //FIXME NEED TO MOVE TO NODE AND ROAD CLASSES
+	protected void redraw(Graphics g) {
 		//draw nodes
 		for(Node n : nodePoints.values()) {
-			Point nodePoint = n.getLoc().asPoint(origin, scale);
-			g.drawOval(nodePoint.x-2, nodePoint.y-2, 4, 4);
+			n.draw(g, origin, scale);
 		}
 
 		//draw edges
 		for(Road r : roadPoints.values()) {
-			for(Segment s: r.getSegments()){ 
-				for(int i = 0; i < s.getCoords().size()-1; i++){
-					Point startNode = s.getCoords().get(i).asPoint(origin, scale); 
-					Point endNode = s.getCoords().get(i+1).asPoint(origin, scale); 
-
-					g.drawLine(startNode.x, startNode.y, endNode.x, endNode.y); 
+			for(Segment s: r.getSegments()){
+				s.draw(g, origin, scale);
 				}
 			}
-		}
+
 	}
 
 
@@ -57,6 +51,11 @@ public class AucklandMain extends GUI{
 	@Override
 	protected void onClick(MouseEvent e) {
 		// TODO Auto-generated method stub
+		for(Node n : nodePoints.values()) {
+			if(e.getX() <= n.getLoc().asPoint(origin, scale).x && e.getY() <= n.getLoc().asPoint(origin, scale).y) {
+				n.setHighlight(true);
+			}
+		}
 
 	}
 
@@ -68,8 +67,9 @@ public class AucklandMain extends GUI{
 
 	@Override
 	protected void onMove(Move m) {
+		//FIXME : Change dependent on scale of width and height
 		double zoom = 1.1;
-		
+
 		switch(m) {
 		case NORTH: this.origin = new Location(origin.x, origin.y + 1);
 		redraw();
@@ -81,7 +81,7 @@ public class AucklandMain extends GUI{
 		redraw();
 		break;
 		case WEST: this.origin = new Location(origin.x - 1, origin.y);
-		redraw();		
+		redraw();
 		break;
 		case ZOOM_IN: this.scale *= zoom;
 		break;
@@ -95,15 +95,15 @@ public class AucklandMain extends GUI{
 
 	@Override
 	protected void onLoad(File nodes, File roads, File segments, File polygons) {
-		
+
 		//--------------------------------LOADROADS----------------------------------------------
 
 		try {
-			File loadRoads = roads;
-			BufferedReader roadReader = new BufferedReader(new FileReader(loadRoads));
+			BufferedReader roadReader = new BufferedReader(new FileReader(roads));
 			roadReader.readLine();
 			String reader;
-
+			// https://stackoverflow.com/questions/19575308/read-a-file-separated-by-tab-and-put-the-words-in-an-arraylist
+			// used to find how to parse a tab file
 			while ((reader = roadReader.readLine()) != null) {
 				String[] dataRoad = reader.split("\t");
 				int roadID = Integer.parseInt(dataRoad[0]);
@@ -125,7 +125,7 @@ public class AucklandMain extends GUI{
 
 		}catch(Exception e) {
 			e.printStackTrace();
-			getTextOutputArea().setText("example doesn't load any files.");
+			getTextOutputArea().setText("Error Loading Roads File");
 
 		}
 
@@ -133,8 +133,7 @@ public class AucklandMain extends GUI{
 		//--------------------------------LOADNODES----------------------------------------------
 
 		try {
-			File loadNode = nodes;
-			BufferedReader nodeReader = new BufferedReader(new FileReader(loadNode));
+			BufferedReader nodeReader = new BufferedReader(new FileReader(nodes));
 			String reader;
 
 			while ((reader = nodeReader.readLine()) != null) {
@@ -151,7 +150,7 @@ public class AucklandMain extends GUI{
 
 		}catch(Exception e) {
 			e.printStackTrace();
-			getTextOutputArea().setText("example doesn't load any files.");
+			getTextOutputArea().setText("Error Loading Nodes File");
 		}
 
 
@@ -159,23 +158,25 @@ public class AucklandMain extends GUI{
 		//------------------------------LOADSEGMENTS------------------------------------------------
 
 		try{
-			File segmentsFile = segments;
-			BufferedReader segmentsFileReader = new BufferedReader(new FileReader(segmentsFile));
+
+			BufferedReader segmentsFileReader = new BufferedReader(new FileReader(segments));
 			segmentsFileReader.readLine();
 			for(String line = segmentsFileReader.readLine(); line != null; line = segmentsFileReader.readLine()){
-				String [] dataSeg = line.split("\t"); 
+				String [] dataSeg = line.split("\t");
 				int ID = Integer.parseInt(dataSeg[0]);
 				Road road = roadPoints.get(ID);
 				double segmentLength = Double.parseDouble(dataSeg[1]);
 				int nodeID1 = Integer.parseInt(dataSeg[2]);
 				int nodeID2 = Integer.parseInt(dataSeg[3]);
-				Node node1 = nodePoints.get(nodeID1); 
-				Node node2 = nodePoints.get(nodeID2); 
+				Node node1 = nodePoints.get(nodeID1);
+				Node node2 = nodePoints.get(nodeID2);
+
+				//https://stackoverflow.com/questions/303913/java-reading-integers-from-a-file-into-an-array
+				//Used to find how to parse to array
 				ArrayList<Location> loc = new ArrayList<Location>();
 				for (int i = 4; i < dataSeg.length; i = i+2) {
 					double lat = Double.parseDouble(dataSeg[i]);
 					double lon = Double.parseDouble(dataSeg[i+1]);
-					
 					Location location = Location.newFromLatLon(lat, lon);
 					loc.add(location);
 				}
@@ -183,14 +184,15 @@ public class AucklandMain extends GUI{
 				node1.addInSegments(newSegment);
 				node2.addOutSegments(newSegment);
 				road.addRoadSegment(newSegment);
-				segmentPoints.put(ID,newSegment); 
+				segmentPoints.put(ID,newSegment);
 				segementList.add(newSegment);
 			}
 			segmentsFileReader.close();
-			
+
 		}
-		catch(IOException e){
-			System.out.print("caught exception: " + e);
+		catch(Exception e){
+			e.printStackTrace();
+			getTextOutputArea().setText("Error loading Segment File ");
 		}
 
 	}
