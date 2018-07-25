@@ -1,13 +1,17 @@
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Segment {
-	
+
 	private int road;
 	private double length;
 	private Node nodeID1;
 	private Node nodeID2;
 	private ArrayList<Location> coords;
+	private boolean highlight;
 	/**
 	 * @param road
 	 * @param length
@@ -81,6 +85,37 @@ public class Segment {
 	 */
 	public void setCoords(ArrayList<Location> coords) {
 		this.coords = coords;
+	}
+
+	/**
+	 * @return the highlight
+	 */
+	public boolean isHighlight() {
+		return highlight;
+	}
+	/**
+	 * @param highlight the highlight to set
+	 */
+	public void setHighlight(boolean highlight) {
+		this.highlight = highlight;
+	}
+
+
+	public void draw(Graphics g, Location origin, double scale) {
+
+		if(highlight == true) {
+			g.setColor(Color.BLUE);
+		}else {
+			g.setColor(Color.BLACK);
+		}
+
+		for(int i = 0; i < getCoords().size()-1; i++){
+			Point startNode = getCoords().get(i).asPoint(origin, scale);
+			Point endNode = getCoords().get(i+1).asPoint(origin, scale);
+
+			g.drawLine(startNode.x, startNode.y, endNode.x, endNode.y);
+
+		}
 	}
 
 }
