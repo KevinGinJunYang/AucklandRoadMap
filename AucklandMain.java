@@ -48,7 +48,7 @@ public class AucklandMain extends GUI{
 
 
 
-	@Override
+	@Override // find closest node 
 	protected void onClick(MouseEvent e) {
 		// TODO Auto-generated method stub
 		for(Node n : nodePoints.values()) {
