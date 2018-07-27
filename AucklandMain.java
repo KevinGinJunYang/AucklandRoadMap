@@ -50,13 +50,6 @@ public class AucklandMain extends GUI{
 
 	@Override // find closest node 
 	protected void onClick(MouseEvent e) {
-		// TODO Auto-generated method stub
-		for(Node n : nodePoints.values()) {
-			if(e.getX() <= n.getLoc().asPoint(origin, scale).x && e.getY() <= n.getLoc().asPoint(origin, scale).y) {
-				n.setHighlight(true);
-			}
-		}
-
 	}
 
 	@Override
