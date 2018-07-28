@@ -7,6 +7,7 @@ import java.util.List;
 public class Segment {
 
 	private int road;
+	private Road roads;
 	private double length;
 	private Node nodeID1;
 	private Node nodeID2;
@@ -19,12 +20,13 @@ public class Segment {
 	 * @param nodeID2
 	 * @param coords
 	 */
-	public Segment(int road, double length, Node nodeID1, Node nodeID2, ArrayList<Location> coords) {
+	public Segment(int road, double length, Node nodeID1, Node nodeID2, ArrayList<Location> coords, Road r) {
 		this.road = road;
 		this.length = length;
 		this.nodeID1 = nodeID1;
 		this.nodeID2 = nodeID2;
 		this.coords = coords;
+		this.roads = r;
 	}
 	/**
 	 * @return the road
@@ -116,6 +118,16 @@ public class Segment {
 			g.drawLine(startNode.x, startNode.y, endNode.x, endNode.y);
 
 		}
+	}
+	public Road getRoads() {
+		return roads;
+	}
+	public void setRoads(Road roads) {
+		this.roads = roads;
+	}
+	
+	public String getRoadName() {
+		return roads.getLabel();
 	}
 
 }
