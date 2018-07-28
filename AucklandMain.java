@@ -7,15 +7,17 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class AucklandMain extends GUI{
 
 	private Map<Integer, Node> nodePoints = new HashMap<>();
 	private Map<Integer, Road> roadPoints = new HashMap<>();
 	private Map<Integer, Segment> segmentPoints = new HashMap<>();
-	private List<Segment> segementList = new ArrayList<Segment>();
+	private Set<String> roadNames = new HashSet<>();
+	private Set<Node> limitSelectedNode = new HashSet<>();
 
 	private double centerLat = -36.847622;
 	private double centerLon = 174.763444;
@@ -48,13 +50,72 @@ public class AucklandMain extends GUI{
 
 
 
-	@Override // find closest node 
+	@Override
 	protected void onClick(MouseEvent e) {
+		// TODO Auto-generated method stub
+		Node selectedNode = findNeighborNode(e.getPoint(), origin, scale);
+		/*if(limitSelectedNode.size() < 2) {
+			limitSelectedNode.add(selectedNode);
+		}*/
+		
+		if(selectedNode != null) {
+			selectedNode.setHighlight(true);
+		}
+		
+		for(Segment seg : selectedNode.getSegments()) {
+			seg.setHighlight(true);
+			roadNames.add(seg.getRoadName());
+			
+		}
+		
+		int nodeID = selectedNode.getNodeID();
+		double lat = selectedNode.getLat();
+		double lon = selectedNode.getLon();
+		String roadName = roadNames.toString().replace("[","").replace("]","");
+		
+		
+		getTextOutputArea().setText("Node ID : " + nodeID + "\nLatitude : " + lat + "   Longitude : " + lon + "\nSegments connected to nodes : \n" + roadName);
+
 	}
+
+	
+
+	private Node findNeighborNode(Point p, Location origin, double scale) {
+		//https://stackoverflow.com/questions/35877681/scalafx-javafx-8-get-nearest-nodes
+		Location selected = Location.newFromPoint(p, origin, scale);
+		Node endingNode = null;
+		double distance = Double.POSITIVE_INFINITY;
+		for(Node n : nodePoints.values()) {
+			double nodeDistance = selected.distance(n.getLoc());
+			if(nodeDistance < distance) {
+				distance  = nodeDistance;
+				endingNode = n;
+			}
+		}
+		return endingNode;
+	}
+
+
 
 	@Override
 	protected void onSearch() {
-		// TODO Auto-generated method stub
+		String input = getSearchBox().getText();
+		
+		for(Road r : roadPoints.values()) {
+			for(Segment s : r.getSegments()) {
+				if(input.equalsIgnoreCase(s.getRoadName())) {
+					s.getNodeID1().setHighlight(true);
+					s.getNodeID2().setHighlight(true);
+					s.setHighlight(true);
+					getTextOutputArea().setText(s.getRoadName());
+			}
+				else {
+					getTextOutputArea().setText("No such road found");
+					
+				}
+			}
+		}
+		
 
 	}
 
@@ -113,6 +174,7 @@ public class AucklandMain extends GUI{
 
 				Road road = new Road(roadID, type, label, city, oneWay, speed, roadClass, notForCar, notForPede, notForBicy);
 				roadPoints.put(roadID, road);
+				
 			}
 			roadReader.close();
 
@@ -164,8 +226,6 @@ public class AucklandMain extends GUI{
 				Node node1 = nodePoints.get(nodeID1);
 				Node node2 = nodePoints.get(nodeID2);
 
-				//https://stackoverflow.com/questions/303913/java-reading-integers-from-a-file-into-an-array
-				//Used to find how to parse to array
 				ArrayList<Location> loc = new ArrayList<Location>();
 				for (int i = 4; i < dataSeg.length; i = i+2) {
 					double lat = Double.parseDouble(dataSeg[i]);
@@ -173,12 +233,12 @@ public class AucklandMain extends GUI{
 					Location location = Location.newFromLatLon(lat, lon);
 					loc.add(location);
 				}
-				Segment newSegment = new Segment(ID,segmentLength, node1, node2, loc);
-				node1.addInSegments(newSegment);
-				node2.addOutSegments(newSegment);
+				Segment newSegment = new Segment(ID,segmentLength, node1, node2, loc, road);
+				node1.addSegment(newSegment);
+				node2.addSegment(newSegment);
 				road.addRoadSegment(newSegment);
 				segmentPoints.put(ID,newSegment);
-				segementList.add(newSegment);
+	
 			}
 			segmentsFileReader.close();
 
