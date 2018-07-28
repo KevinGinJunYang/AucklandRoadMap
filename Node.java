@@ -11,8 +11,8 @@ public class Node {
 	private Location loc;
 	private boolean highlight;
 
-	private ArrayList<Segment> inSegments;
-	private ArrayList<Segment> outSegments;
+	private ArrayList<Segment> segments;
+	private ArrayList<Road> roads;
 	/**
 	 * @param nodeID
 	 * @param lat
@@ -27,8 +27,8 @@ public class Node {
 		this.lat = lat;
 		this.lon = lon;
 		this.loc = Location.newFromLatLon(lat, lon);
-		this.inSegments = new ArrayList<Segment>();
-		this.outSegments = new ArrayList<Segment>();
+		this.setSegments(new ArrayList<Segment>());
+		this.setRoads(new ArrayList<>());
 	}
 	/**
 	 * @return the nodeID
@@ -78,39 +78,6 @@ public class Node {
 	public void setLoc(Location loc) {
 		this.loc = loc;
 	}
-	/**
-	 * @return the inSegments
-	 */
-	public ArrayList<Segment> getInSegments() {
-		return inSegments;
-	}
-	/**
-	 * @param inSegments the inSegments to set
-	 */
-	public void setInSegments(ArrayList<Segment> inSegments) {
-		this.inSegments = inSegments;
-	}
-	/**
-	 * @return the outSegments
-	 */
-	public ArrayList<Segment> getOutSegments() {
-		return outSegments;
-	}
-	/**
-	 * @param outSegments the outSegments to set
-	 */
-	public void setOutSegments(ArrayList<Segment> outSegments) {
-		this.outSegments = outSegments;
-	}
-
-
-	public void addInSegments(Segment s) {
-		this.inSegments.add(s);
-	}
-
-	public void addOutSegments(Segment s) {
-		this.outSegments.add(s);
-	}
 
 	/**
 	 * @return the highlight
@@ -136,4 +103,32 @@ public class Node {
 		}
 		g.fillOval(nodePoint.x-2, nodePoint.y-2, 4, 4);
 	}
+	public ArrayList<Segment> getSegments() {
+		return segments;
+	}
+	public void setSegments(ArrayList<Segment> segments) {
+		this.segments = segments;
+	}
+
+	public void addSegment(Segment s) {
+		this.segments.add(s);
+	}
+	/**
+	 * @return the roads
+	 */
+	public ArrayList<Road> getRoads() {
+		return roads;
+	}
+	/**
+	 * @param roads the roads to set
+	 */
+	public void setRoads(ArrayList<Road> roads) {
+		this.roads = roads;
+	}
+	
+	public void addRoads(Road r) {
+		this.roads.add(r);
+	}
+
+
 }
