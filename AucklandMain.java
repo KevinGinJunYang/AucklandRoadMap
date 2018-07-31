@@ -52,12 +52,9 @@ public class AucklandMain extends GUI{
 
 	@Override
 	protected void onClick(MouseEvent e) {
-		// TODO Auto-generated method stub
+
 		Node selectedNode = findNeighborNode(e.getPoint(), origin, scale);
-		/*if(limitSelectedNode.size() < 2) {
-			limitSelectedNode.add(selectedNode);
-		}*/
-		
+	
 		if(selectedNode != null) {
 			selectedNode.setHighlight(true);
 		}
