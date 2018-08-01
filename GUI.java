@@ -126,6 +126,12 @@ public abstract class GUI {
 	public void redraw() {
 		frame.repaint();
 	}
+	
+	protected abstract void onPress(MouseEvent e);
+	
+	protected abstract void onDrag(MouseEvent e);
+
+	protected abstract void onScroll(MouseWheelEvent e);
 
 	// --------------------------------------------------------------------
 	// Everything below here is Swing-related and, while it's worth
@@ -133,7 +139,7 @@ public abstract class GUI {
 	// assignment up to and including completion.
 	// --------------------------------------------------------------------
 
-	private static final boolean UPDATE_ON_EVERY_CHARACTER = false;
+	private static final boolean UPDATE_ON_EVERY_CHARACTER = true;
 
 	private static final int DEFAULT_DRAWING_HEIGHT = 400;
 	private static final int DEFAULT_DRAWING_WIDTH = 400;
@@ -379,10 +385,24 @@ public abstract class GUI {
 				onClick(e);
 				redraw();
 			}
+			
+			public void mousePressed(MouseEvent e){
+				onPress(e);
+				redraw();
+			}
 		});
 
+		drawing.addMouseMotionListener(new MouseAdapter(){
+			public void mouseDragged(MouseEvent e){
+				onDrag(e);
+				redraw();
+			}
+		});
+		/* active mouse features */
 		drawing.addMouseWheelListener(new MouseAdapter() {
 			public void mouseWheelMoved(MouseWheelEvent e) {
+				onScroll(e);
+				redraw();
 			}
 		});
 
