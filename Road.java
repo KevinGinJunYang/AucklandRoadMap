@@ -1,3 +1,5 @@
+
+import java.awt.Graphics;
 import java.util.ArrayList;
 
 public class Road {
@@ -174,7 +176,27 @@ public class Road {
 		this.segments = segments;
 	}
 	
+	
+	/**
+	 * @param segments the segments to add
+	 */
 	public void addRoadSegment(Segment s) {
 		this.segments.add(s);
+	}
+	
+	
+	/**
+	 * draw function that takes location and double
+	 * 
+	 * @param g drawing function 
+	 * @param origin Location 
+	 * @param scale 
+	 * 
+	 */
+	public void draw(Graphics g, Location origin, double scale){
+		for(Segment s: segments){
+				s.draw(g, origin, scale);
+			
+		}
 	}
 }
