@@ -1,15 +1,21 @@
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+
+
 
 public class AucklandMain extends GUI{
 
@@ -17,12 +23,19 @@ public class AucklandMain extends GUI{
 	private Map<Integer, Road> roadPoints = new HashMap<>();
 	private Map<Integer, Segment> segmentPoints = new HashMap<>();
 	private Set<String> roadNames = new HashSet<>();
-	private Set<Node> limitSelectedNode = new HashSet<>();
+	private Set<String> roadclickNames = new HashSet<>();
+	private List<Road> trieRoads = new ArrayList<>();
+	private List<Node> selectedNode = new ArrayList<>();
+	private List<Segment> selectedSegment = new ArrayList<>();
+	private TrieNode trieNode = new TrieNode();
 
 	private double centerLat = -36.847622;
 	private double centerLon = 174.763444;
 	private double scale = 111.0;
 	private Location origin = Location.newFromLatLon(centerLat,centerLon);
+	private int pointX;
+	private int pointY;
+	private int scroll;
 
 
 
@@ -35,86 +48,144 @@ public class AucklandMain extends GUI{
 	@Override
 	protected void redraw(Graphics g) {
 		//draw nodes
+		g.setColor(Color.BLACK);
 		for(Node n : nodePoints.values()) {
 			n.draw(g, origin, scale);
 		}
 
 		//draw edges
 		for(Road r : roadPoints.values()) {
-			for(Segment s: r.getSegments()){
-				s.draw(g, origin, scale);
-				}
-			}
+			r.draw(g, origin, scale);
 
+		}
+		
+		g.setColor(Color.BLUE);
+		for(Road r: trieRoads) {
+			r.draw(g, origin, scale);
+		}
+		
+	
+		g.setColor(Color.RED);
+		for(Node n : selectedNode) {
+			n.draw(g, origin, scale);
+		}
+
+		
+		g.setColor(Color.BLUE);
+		for(Segment s : selectedSegment) {
+			s.draw(g, origin, scale);
+		}
 	}
 
 
 
 	@Override
 	protected void onClick(MouseEvent e) {
+		
+		//clears all the previous clicked values 
+		roadclickNames.clear();
+		selectedNode.clear();
+		selectedSegment.clear();
+		trieRoads.clear();
+		roadNames.clear();
 
-		Node selectedNode = findNeighborNode(e.getPoint(), origin, scale);
-	
-		if(selectedNode != null) {
-			selectedNode.setHighlight(true);
+		
+		//gets closest node from point 
+		Node selected = findNeighborNode(e.getPoint(), origin, scale);
+
+		if(selectedNode.contains(selected)) {
+			selectedNode.clear();
 		}
-		
-		for(Segment seg : selectedNode.getSegments()) {
-			seg.setHighlight(true);
-			roadNames.add(seg.getRoadName());
-			
+		//add closest node to list 
+		selectedNode.add(selected);
+
+		if(selected!=null) {
+			for(Segment seg : selected.getSegments()) {
+				// stores the selctedSegments and the roadNames
+				selectedSegment.add(seg);
+				roadclickNames.add(seg.getRoadName());
+
+				int nodeID = selected.getNodeID();
+				double lat = selected.getLat();
+				double lon = selected.getLon();
+				String roadName = roadclickNames.toString().replace("[","").replace("]","");
+				// prints ID, Latitude, Longitude and roadSegments 
+				getTextOutputArea().setText("Node ID : " + nodeID + "\nLatitude : " + lat + "   Longitude : " + lon + "\nRoads connected to intersection : \n" + roadName);
+
+
+			}
 		}
-		
-		int nodeID = selectedNode.getNodeID();
-		double lat = selectedNode.getLat();
-		double lon = selectedNode.getLon();
-		String roadName = roadNames.toString().replace("[","").replace("]","");
-		
-		
-		getTextOutputArea().setText("Node ID : " + nodeID + "\nLatitude : " + lat + "   Longitude : " + lon + "\nSegments connected to nodes : \n" + roadName);
 
 	}
 
-	
-
+	/**
+	 * Finds the closest node from point of click on the screen 
+	 * 
+	 * @param p
+	 * @param origin
+	 * @param scale
+	 * @return
+	 */
 	private Node findNeighborNode(Point p, Location origin, double scale) {
 		//https://stackoverflow.com/questions/35877681/scalafx-javafx-8-get-nearest-nodes
-		Location selected = Location.newFromPoint(p, origin, scale);
+		Location selected = Location.newFromPoint(p, origin, scale); // gets location of click
 		Node endingNode = null;
-		double distance = Double.POSITIVE_INFINITY;
+		double distance = Double.POSITIVE_INFINITY; // sets so that  distance is huge and no node is found 
 		for(Node n : nodePoints.values()) {
-			double nodeDistance = selected.distance(n.getLoc());
-			if(nodeDistance < distance) {
+			double nodeDistance = selected.distance(n.getLoc()); // gets distance between click and node 
+			if(nodeDistance < distance) { // keeps replacing distance to the distance of closest node to click 
 				distance  = nodeDistance;
 				endingNode = n;
 			}
 		}
-		return endingNode;
+		return endingNode; 
 	}
 
 
 
 	@Override
 	protected void onSearch() {
-		String input = getSearchBox().getText();
+		// clears the previous search values 
+		trieRoads.clear();
+		roadNames.clear();
+		selectedNode.clear();
+		selectedSegment.clear();
 		
+		//gets the input of user
+		String input = getSearchBox().getText();
+		if(input == null || input == "") {
+			trieRoads.clear();
+		}
+
+		TrieNode node = trieNode.get(input);
+		// checks if location is valid 
+		if(node == null) {
+			getTextOutputArea().setText("No location found with \" " + input + " \" ");
+		}else {
+			//gets all the children in the prefix
+			trieRoads = node.getAll();
+			for (Road road : trieRoads) {
+				//stores all the roads 
+				if (!roadNames.contains(road.getLabel())) {
+					roadNames.add(road.getLabel());
+				}
+			}
+			getTextOutputArea().setText(roadNames.toString().replace("[","").replace("]",""));
+		}
+
+		// if exactly same then print details 
 		for(Road r : roadPoints.values()) {
 			for(Segment s : r.getSegments()) {
 				if(input.equalsIgnoreCase(s.getRoadName())) {
-					s.getNodeID1().setHighlight(true);
-					s.getNodeID2().setHighlight(true);
-					s.setHighlight(true);
-					getTextOutputArea().setText(s.getRoadName());
-			}
-				else {
-					getTextOutputArea().setText("No such road found");
-					
+					getTextOutputArea().setText("Road ID : " + r.getRoadID() + "\nLatitude : " + s.getNodeID1().getLat()
+							+ "   Longitude : " + s.getNodeID2().getLon() + "\nLocation : \n" + s.getRoadName());
 				}
 			}
 		}
-		
+
 
 	}
+
 
 	@Override
 	protected void onMove(Move m) {
@@ -123,16 +194,12 @@ public class AucklandMain extends GUI{
 
 		switch(m) {
 		case NORTH: this.origin = new Location(origin.x, origin.y + 1);
-		redraw();
 		break;
 		case EAST: this.origin = new Location(origin.x + 1, origin.y);
-		redraw();
 		break;
-		case SOUTH: this.origin = new Location(origin.x, origin.y - 1);
-		redraw();
+		case SOUTH: this.origin = new Location(origin.x, origin.y - 1);		
 		break;
 		case WEST: this.origin = new Location(origin.x - 1, origin.y);
-		redraw();
 		break;
 		case ZOOM_IN: this.scale *= zoom;
 		break;
@@ -140,6 +207,34 @@ public class AucklandMain extends GUI{
 		break;
 
 
+		}
+
+	}
+	
+	@Override
+	protected void onPress(MouseEvent e){
+		pointX = e.getX();
+		pointY = e.getY();
+	}
+	
+	@Override
+	protected void onDrag(MouseEvent e){	
+		double moveX = (pointX- e.getX())/scale;
+		double moveY = (e.getY() - pointY)/scale;
+		origin = origin.moveBy(moveX,moveY);
+		//reset x and y 
+		pointX = e.getX();
+		pointY = e.getY();
+		
+	}
+	
+	@Override
+	protected void onScroll(MouseWheelEvent e){
+		scroll = e.getWheelRotation();
+		if (scroll < 0){
+			onMove(Move.ZOOM_IN);
+		}else { 
+			onMove(Move.ZOOM_OUT);
 		}
 
 	}
@@ -171,7 +266,8 @@ public class AucklandMain extends GUI{
 
 				Road road = new Road(roadID, type, label, city, oneWay, speed, roadClass, notForCar, notForPede, notForBicy);
 				roadPoints.put(roadID, road);
-				
+				trieNode.add(road);
+
 			}
 			roadReader.close();
 
@@ -235,7 +331,7 @@ public class AucklandMain extends GUI{
 				node2.addSegment(newSegment);
 				road.addRoadSegment(newSegment);
 				segmentPoints.put(ID,newSegment);
-	
+
 			}
 			segmentsFileReader.close();
 
