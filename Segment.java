@@ -1,4 +1,4 @@
-import java.awt.Color;
+
 import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -12,7 +12,6 @@ public class Segment {
 	private Node nodeID1;
 	private Node nodeID2;
 	private ArrayList<Location> coords;
-	private boolean highlight;
 	/**
 	 * @param road
 	 * @param length
@@ -90,26 +89,14 @@ public class Segment {
 	}
 
 	/**
-	 * @return the highlight
+	 * draw function that takes location and double
+	 * 
+	 * @param g drawing function 
+	 * @param origin Location 
+	 * @param scale 
+	 * 
 	 */
-	public boolean isHighlight() {
-		return highlight;
-	}
-	/**
-	 * @param highlight the highlight to set
-	 */
-	public void setHighlight(boolean highlight) {
-		this.highlight = highlight;
-	}
-
-
 	public void draw(Graphics g, Location origin, double scale) {
-
-		if(highlight == true) {
-			g.setColor(Color.BLUE);
-		}else {
-			g.setColor(Color.BLACK);
-		}
 
 		for(int i = 0; i < getCoords().size()-1; i++){
 			Point startNode = getCoords().get(i).asPoint(origin, scale);
@@ -119,13 +106,24 @@ public class Segment {
 
 		}
 	}
+	
+	/**
+	 * @return roads
+	 */
 	public Road getRoads() {
 		return roads;
 	}
+	
+	/**
+	 * @param roads to set roads
+	 */
 	public void setRoads(Road roads) {
 		this.roads = roads;
 	}
 	
+	/**
+	 * @return road label
+	 */
 	public String getRoadName() {
 		return roads.getLabel();
 	}
