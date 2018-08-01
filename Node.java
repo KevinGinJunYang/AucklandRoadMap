@@ -1,4 +1,4 @@
-import java.awt.Color;
+
 import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -9,7 +9,6 @@ public class Node {
 	private double lat;
 	private double lon;
 	private Location loc;
-	private boolean highlight;
 
 	private ArrayList<Segment> segments;
 	private ArrayList<Road> roads;
@@ -78,34 +77,29 @@ public class Node {
 	public void setLoc(Location loc) {
 		this.loc = loc;
 	}
-
+	
 	/**
-	 * @return the highlight
+	 * draw function that takes location and double
+	 * 
+	 * @param g drawing function 
+	 * @param origin Location 
+	 * @param scale 
+	 * 
 	 */
-	public boolean isHighlight() {
-		return highlight;
-	}
-	/**
-	 * @param highlight the highlight to set
-	 */
-	public void setHighlight(boolean highlight) {
-		this.highlight = highlight;
-	}
-
 	public void draw(Graphics g, Location origin, double scale) {
 		Point nodePoint = loc.asPoint(origin, scale);
 
-		if(highlight == true) {
-			g.setColor(Color.RED);
-		}else {
-			g.setColor(Color.BLACK);
-
-		}
 		g.fillOval(nodePoint.x-2, nodePoint.y-2, 4, 4);
 	}
+	/**
+	 * @param segment the segment to get
+	 */
 	public ArrayList<Segment> getSegments() {
 		return segments;
 	}
+	/**
+	 * @param segment the segment to set
+	 */
 	public void setSegments(ArrayList<Segment> segments) {
 		this.segments = segments;
 	}
@@ -126,9 +120,11 @@ public class Node {
 		this.roads = roads;
 	}
 	
+	/**
+	 * @param add road to roads
+	 */
 	public void addRoads(Road r) {
 		this.roads.add(r);
 	}
-
 
 }
