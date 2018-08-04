@@ -16,12 +16,7 @@ import java.util.Set;
 
 
 
-/**
-*AuckLand road Map
-*
-*
-*
-*/
+
 public class AucklandMain extends GUI{
 
 	private Map<Integer, Node> nodePoints = new HashMap<>();
@@ -34,10 +29,8 @@ public class AucklandMain extends GUI{
 	private List<Segment> selectedSegment = new ArrayList<>();
 	private TrieNode trieNode = new TrieNode();
 
-	private double centerLat = -36.847622;
-	private double centerLon = 174.763444;
-	private double scale = 111.0;
-	private Location origin = Location.newFromLatLon(centerLat,centerLon);
+	private double scale;
+	private Location origin;
 	private int pointX;
 	private int pointY;
 	private int scroll;
@@ -63,19 +56,19 @@ public class AucklandMain extends GUI{
 			r.draw(g, origin, scale);
 
 		}
-		
+
 		g.setColor(Color.BLUE);
 		for(Road r: trieRoads) {
 			r.draw(g, origin, scale);
 		}
-		
-	
+
+
 		g.setColor(Color.RED);
 		for(Node n : selectedNode) {
 			n.draw(g, origin, scale);
 		}
 
-		
+
 		g.setColor(Color.BLUE);
 		for(Segment s : selectedSegment) {
 			s.draw(g, origin, scale);
@@ -86,22 +79,22 @@ public class AucklandMain extends GUI{
 
 	@Override
 	protected void onClick(MouseEvent e) {
-		
-		//clears all the previous clicked values 
+
+		//clears all the previous clicked values
 		roadclickNames.clear();
 		selectedNode.clear();
 		selectedSegment.clear();
 		trieRoads.clear();
 		roadNames.clear();
 
-		
-		//gets closest node from point 
+
+		//gets closest node from point
 		Node selected = findNeighborNode(e.getPoint(), origin, scale);
 
 		if(selectedNode.contains(selected)) {
 			selectedNode.clear();
 		}
-		//add closest node to list 
+		//add closest node to list
 		selectedNode.add(selected);
 
 		if(selected!=null) {
@@ -114,7 +107,7 @@ public class AucklandMain extends GUI{
 				double lat = selected.getLat();
 				double lon = selected.getLon();
 				String roadName = roadclickNames.toString().replace("[","").replace("]","");
-				// prints ID, Latitude, Longitude and roadSegments 
+				// prints ID, Latitude, Longitude and roadSegments
 				getTextOutputArea().setText("Node ID : " + nodeID + "\nLatitude : " + lat + "   Longitude : " + lon + "\nRoads connected to intersection : \n" + roadName);
 
 
@@ -124,8 +117,8 @@ public class AucklandMain extends GUI{
 	}
 
 	/**
-	 * Finds the closest node from point of click on the screen 
-	 * 
+	 * Finds the closest node from point of click on the screen
+	 *
 	 * @param p
 	 * @param origin
 	 * @param scale
@@ -135,42 +128,45 @@ public class AucklandMain extends GUI{
 		//https://stackoverflow.com/questions/35877681/scalafx-javafx-8-get-nearest-nodes
 		Location selected = Location.newFromPoint(p, origin, scale); // gets location of click
 		Node endingNode = null;
-		double distance = Double.POSITIVE_INFINITY; // sets so that  distance is huge and no node is found 
+		double distance = Double.POSITIVE_INFINITY; // sets so that  distance is huge and no node is found
 		for(Node n : nodePoints.values()) {
-			double nodeDistance = selected.distance(n.getLoc()); // gets distance between click and node 
-			if(nodeDistance < distance) { // keeps replacing distance to the distance of closest node to click 
+			double nodeDistance = selected.distance(n.getLoc()); // gets distance between click and node
+			if(nodeDistance < distance) { // keeps replacing distance to the distance of closest node to click
 				distance  = nodeDistance;
 				endingNode = n;
 			}
 		}
-		return endingNode; 
+		return endingNode;
 	}
 
 
 
 	@Override
 	protected void onSearch() {
-		// clears the previous search values 
+		// clears the previous search values
 		trieRoads.clear();
 		roadNames.clear();
 		selectedNode.clear();
 		selectedSegment.clear();
-		
+
 		//gets the input of user
 		String input = getSearchBox().getText();
-		if(input == null || input == "") {
+		if(input == null || input.equals("")) {
 			trieRoads.clear();
+			roadNames.clear();
+			getTextOutputArea().setText("");
+			return;
 		}
 
 		TrieNode node = trieNode.get(input);
-		// checks if location is valid 
+		// checks if location is valid
 		if(node == null) {
 			getTextOutputArea().setText("No location found with \" " + input + " \" ");
 		}else {
 			//gets all the children in the prefix
 			trieRoads = node.getAll();
 			for (Road road : trieRoads) {
-				//stores all the roads 
+				//stores all the roads
 				if (!roadNames.contains(road.getLabel())) {
 					roadNames.add(road.getLabel());
 				}
@@ -178,12 +174,12 @@ public class AucklandMain extends GUI{
 			getTextOutputArea().setText(roadNames.toString().replace("[","").replace("]",""));
 		}
 
-		// if exactly same then print details 
+		// if exactly same then print details
 		for(Road r : roadPoints.values()) {
 			for(Segment s : r.getSegments()) {
 				if(input.equalsIgnoreCase(s.getRoadName())) {
 					getTextOutputArea().setText("Road ID : " + r.getRoadID() + "\nLatitude : " + s.getNodeID1().getLat()
-							+ "   Longitude : " + s.getNodeID2().getLon() + "\nLocation : \n" + s.getRoadName());
+							+ "   Longitude : " + s.getNodeID2().getLon() + "\nLocation : " + s.getRoadName());
 				}
 			}
 		}
@@ -202,7 +198,7 @@ public class AucklandMain extends GUI{
 		break;
 		case EAST: this.origin = new Location(origin.x + 1, origin.y);
 		break;
-		case SOUTH: this.origin = new Location(origin.x, origin.y - 1);		
+		case SOUTH: this.origin = new Location(origin.x, origin.y - 1);
 		break;
 		case WEST: this.origin = new Location(origin.x - 1, origin.y);
 		break;
@@ -215,30 +211,30 @@ public class AucklandMain extends GUI{
 		}
 
 	}
-	
+
 	@Override
 	protected void onPress(MouseEvent e){
 		pointX = e.getX();
 		pointY = e.getY();
 	}
-	
+
 	@Override
-	protected void onDrag(MouseEvent e){	
+	protected void onDrag(MouseEvent e){
 		double moveX = (pointX- e.getX())/scale;
 		double moveY = (e.getY() - pointY)/scale;
 		origin = origin.moveBy(moveX,moveY);
-		//reset x and y 
+		//reset x and y
 		pointX = e.getX();
 		pointY = e.getY();
-		
+
 	}
-	
+
 	@Override
 	protected void onScroll(MouseWheelEvent e){
 		scroll = e.getWheelRotation();
 		if (scroll < 0){
 			onMove(Move.ZOOM_IN);
-		}else { 
+		}else {
 			onMove(Move.ZOOM_OUT);
 		}
 
@@ -246,6 +242,7 @@ public class AucklandMain extends GUI{
 
 	@Override
 	protected void onLoad(File nodes, File roads, File segments, File polygons) {
+
 
 		//--------------------------------LOADROADS----------------------------------------------
 
@@ -345,6 +342,49 @@ public class AucklandMain extends GUI{
 			e.printStackTrace();
 			getTextOutputArea().setText("Error loading Segment File ");
 		}
+
+
+		scaleMap();
+
+	}
+	
+	
+	
+
+	/**
+	 * Scales Map size to screen ratio and draws it in the center
+	 *
+	 */
+	public void scaleMap() {
+		double right = Double.NEGATIVE_INFINITY;
+		double left = Double.POSITIVE_INFINITY;
+		double bot = Double.POSITIVE_INFINITY;
+		double top = Double.NEGATIVE_INFINITY;
+
+
+		//gets values and scales down to highest / lowest drawing point
+		for(Node n : nodePoints.values()) {
+			Location scaleNode = Location.newFromLatLon(n.getLat(), n.getLon());
+			if(scaleNode.x < left) {
+				left = scaleNode.x;
+			}
+			if(scaleNode.x > right) {
+				right = scaleNode.x;
+			}
+			if(scaleNode.y > top) {
+				top = scaleNode.y;
+			}
+			if(scaleNode.y < bot) {
+				bot = scaleNode.y;
+			}
+
+		}
+
+		double width = getDrawingAreaDimension().getWidth()/(right - left);
+		double height = getDrawingAreaDimension().getHeight()/(top-bot);
+		origin = new Location(left, top); // sets to top left corner
+		scale = Math.min(width, height); // sets as middle of screen
+
 
 	}
 
