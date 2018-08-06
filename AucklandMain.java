@@ -14,9 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
-
-
 public class AucklandMain extends GUI{
 
 	private Map<Integer, Node> nodePoints = new HashMap<>();
@@ -40,7 +37,6 @@ public class AucklandMain extends GUI{
 	public static void main(String[] args) {
 		new AucklandMain();
 	}
-
 
 
 	@Override
