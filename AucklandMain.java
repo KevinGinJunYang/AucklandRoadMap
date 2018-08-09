@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-// addd a search
+
 public class AucklandMain extends GUI{
 
 	private Map<Integer, Node> nodePoints = new HashMap<>();
