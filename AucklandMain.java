@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AucklandMain extends GUI{
+public class AucklandMain extends GUI{ //ASTART
 
 	private Map<Integer, Node> nodePoints = new HashMap<>();
 	private Map<Integer, Road> roadPoints = new HashMap<>();
